@@ -1,0 +1,94 @@
+---
+title: "MPGTransmissionStudy.Rmd"
+author: "Jim Callahan"
+date: "October 7, 2015"
+output: pdf_document
+---
+
+### Executive Summary ###  
+This project is intended to answer the following two questions:  
+
+1. “Is an automatic or manual transmission better for MPG?”  
+2. "Quantify the MPG difference between automatic and manual transmissions?"  
+
+using statistical regression analysis in **R** on the **"Motor Trend"**, **"mtcars"** data set
+included with the **R** system.  
+
+### Data Vintage ###
+It should be noted the **"mtcars"** data set is vintage **1981** and is therefore unlikely to be representative of the contemporary state of the art.  
+
+The source of the **"mtcars"** data set (as described in the documentation "help(mtcars)" ) is
+Henderson and Velleman (1981), **Building multiple regression models interactively.** Biometrics, 37, 391–411.
+
+### Exploratory Data Analysis ###
+```{r}
+data(mtcars)
+str(mtcars)
+```
+
+### Preliminary Analysis ###
+On the surface the minimum requirements of this project are trivially simple:  
+1. Convert the zero-one transmission indicator variable, **"am"** to an **R** **"factor"**.  
+2. Run a regression with mpg = f(am) or in **R** notation **lm(mpg ~ am))**  
+  
+```{r}
+# MPG Model zero "000" -- our "quick and dirty" literal regression
+MPGmod000 <- lm(mtcars$mpg ~ as.factor(mtcars$am))
+MPGmod000
+```
+
+According to the documention (help(mtcars)) the coding for **"am"** variable is  
+zero(0) = automatic transmission and 
+one(1)  = manual transmission.
+
+So, the "quick and dirty" interpretation our base model zero, would be that  
+the average 1980 vintage car with automatic transmission gets 17 miles per gallon
+while the average 1980 vintage car with manual transmisson gets an additional 
+7 miles per gallon for a total of 24 miles per gallon.
+
+We can picture this with a box plot.
+
+
+```{r, echo=TRUE}
+plot(as.factor(mtcars$am), mtcars$mpg)
+abline(mtcars$mpg ~ as.factor(mtcars$am))
+```
+
+Of course to accept this analysis at face value, one would have to invoke the 
+economist's assumption of "***ceteris paribus***" (all other things being equal).
+
+Of course we know all other things are **NOT EQUAL**. There are **confounding variables**.
+For instance, the cars vary in weight, number of cylinders in their engines and the
+size of their engines measured in cubic inch displacement.
+
+```{r}
+# wt = Weight (lb/1000)
+summary( mtcars$wt )
+# cyl = Number of cylinders
+summary( as.factor(mtcars$cyl) )
+# disp = Displacement (cu.in.)
+summary( mtcars$disp )
+
+```
+### Historical Context ###
+Moreover, keep in mind the historical context, this is the late 1970s/early 1980s when there was still a huge difference between American, European and Japanese auto technology.
+
+> "In the mid-1980s, Toyota took over the Fremont [,California] plant, one of GM's worst, 
+> a factory known for sex, drugs and defective vehicles. And as part of an historic 
+> joint venture [NUMMI], Toyota turned the plant into one of GM's best, practically overnight.  
+> Along the way — remarkably — Toyota even shared its production secrets. 
+> ...  In 1985, after NUMMI opened, Car and Driver magazine ran the following   
+> headline:  **'Hell Freezes Over.'** "    
+**"The End Of The Line For GM-Toyota Joint Venture"**  by Frank Langfitt,  
+National Public Radio (NPR), MARCH 26, 2010 3:00 PM ET  
+http://www.npr.org/templates/story/story.php?storyId=125229157  
+
+GM's Saturn was not introduced until the 1991 model year, ten years after 
+the 1981 vintage of the "mtcars" data set.   
+https://en.wikipedia.org/wiki/Saturn_Corporation
+
+Electric vehicle hybrids, such as Toyota's Prius NHW11, were not introduced to the US market 
+until the 2001 model year.  
+https://en.wikipedia.org/wiki/Toyota_Prius  
+
+
