@@ -12,15 +12,42 @@ This project is intended to answer the following two questions:
 2. "Quantify the MPG difference between automatic and manual transmissions?"  
 
 using statistical regression analysis in **R** on the **"Motor Trend"**, **"mtcars"** data set
-included with the **R** system.  
+included with the **R** system.  This study does not show transmission type (automatic vs. manual ) to be significant once one accounts for weight and number of engine cylinders. This result, however, may represent a flaw in the study design; this regression study, in effect uses group averages and not paired data. Paired data would be closer to the consumer experience of evaluating one model of car with manual or automatic transmission. There may be a more distinct
+effect when one examines one model of car with manual or automatic transmission rather than pooling several models of cars together in one data set.
 
 ### Data Vintage ###
-It should be noted the **"mtcars"** data set is vintage **1981** and is therefore unlikely to be representative of the contemporary state of the art.  
+The source of the **"mtcars"** data set (as described in the documentation **help(mtcars)** ) is
+Henderson and Velleman (1981), **Building multiple regression models interactively.** 
+Biometrics, 37, 391–411. 
+http://www.mortality.org/INdb/2008/02/12/8/document.pdf
 
-The source of the **"mtcars"** data set (as described in the documentation "help(mtcars)" ) is
-Henderson and Velleman (1981), **Building multiple regression models interactively.** Biometrics, 37, 391–411.
+The **help(mtcars)** documentation states:  
+  
+> "The data was extracted from the **1974 Motor Trend** US magazine,  
+> and comprises fuel consumption and 10 aspects of automobile design and performance  
+> for 32 automobiles (**1973–74 models**)."  
+  
+So, it should be noted the **"mtcars"** data set is vintage **mid-1970s** and is therefore unlikely to be representative of the contemporary state of the automotive art.
 
 ### Exploratory Data Analysis ###
+According to the **help(mtcars)** documentation, **"mtcars"** is  
+
+> "A **data frame** with 32 observations on 11 variables.  
+>  
+> [, 1]	**mpg**	Miles/(US) gallon  
+> [, 2]	**cyl**	Number of cylinders  
+> [, 3]	**disp**	Displacement (cu.in.)  
+> [, 4]	**hp**	Gross horsepower  
+> [, 5]	**drat**	Rear axle ratio  
+> [, 6]	**wt**	Weight (lb/1000)  
+> [, 7]	**qsec**	1/4 mile time  
+> [, 8]	**vs**	V/S  
+> [, 9]	**am**	Transmission (0 = automatic, 1 = manual)  
+> [,10]	**gear**	Number of forward gears  
+> [,11]	**carb**	Number of carburetors"  
+>  
+  
+The documentation is confirmed using the **str()** (structure) function in **R**:
 ```{r}
 data(mtcars)
 str(mtcars)
@@ -33,7 +60,7 @@ On the surface the minimum requirements of this project are trivially simple:
   
 ```{r}
 # MPG Model zero "000" -- our "quick and dirty" literal regression
-MPGmod000 <- lm(mtcars$mpg ~ as.factor(mtcars$am))
+MPGmod000 <- lm(mpg ~ as.factor(am), data=mtcars)
 MPGmod000
 ```
 
@@ -68,7 +95,6 @@ summary( mtcars$wt )
 summary( as.factor(mtcars$cyl) )
 # disp = Displacement (cu.in.)
 summary( mtcars$disp )
-
 ```
 ### Historical Context ###
 Moreover, keep in mind the historical context, this is the late 1970s/early 1980s when there was still a huge difference between American, European and Japanese auto technology.
@@ -89,6 +115,64 @@ https://en.wikipedia.org/wiki/Saturn_Corporation
 
 Electric vehicle hybrids, such as Toyota's Prius NHW11, were not introduced to the US market 
 until the 2001 model year.  
-https://en.wikipedia.org/wiki/Toyota_Prius  
+https://en.wikipedia.org/wiki/Toyota_Prius 
+
+
+A Web search for ggplot2 facet examples found a QuickR blog post,
+"Graphics with ggplot2" by Robert I. Kabacoff, PhD.
+http://www.statmethods.net/advgraphs/ggplot2.html
+```{r}
+# Separate regressions of mpg on weight for each number of cylinders
+# create factors with value labels 
+library(ggplot2)
+data(mtcars)
+mtcars$gear <- factor(mtcars$gear,levels=c(3,4,5),
+                      labels=c("3gears","4gears","5gears")) 
+mtcars$am <- factor(mtcars$am,levels=c(0,1),
+                    labels=c("Automatic","Manual")) 
+mtcars$cyl <- factor(mtcars$cyl,levels=c(4,6,8),
+                     labels=c("4 cylinder","6 cylinder","8 cylinder")) 
+
+# All -- use everything
+MPGModAll <- lm(mpg  ~ . , data = mtcars); 
+summary(MPGModAll)
+
+# Weignt is significant
+MPGmod001 <- lm(mpg ~ as.factor(am)+wt, data=mtcars)
+summary(MPGmod001)
+
+# Cylinders helps
+MPGmod002 <- lm(mpg ~ as.factor(am)+wt+as.factor(cyl), data=mtcars)
+summary(MPGmod002)
+
+# drop Transmission (am) *** BEST MODEL ***
+par(mfrow = c(1,2))
+MPGmod003 <- lm(mpg ~ wt+as.factor(cyl), data=mtcars)
+summary(MPGmod003)
+plot(MPGmod003, which = 1)
+plot(MPGmod003, which = 2)
+
+MPGmod005 <- lm(mpg ~ log(wt), data=mtcars)
+summary(MPGmod005)
+
+MPGmod005 <- lm(mpg ~ log(wt)+as.factor(cyl), data=mtcars)
+summary(MPGmod005)
+
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~x, color=cyl, 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~log(x), color=cyl, 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+```
+
+
 
 
