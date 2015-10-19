@@ -27,10 +27,12 @@ summary(MPGModAll)
 plot(MPGModAll)
 
 # drop Transmission (am) *** BEST MODEL ***
-par(mfrow = c(2, 2))
+par(mfrow = c(1,2))
 MPGmod003 <- lm(mpg ~ +wt+as.factor(cyl), data=mtcars)
 summary(MPGmod003)
-plot(MPGmod003)
+plot(MPGmod003, which = 1)
+plot(MPGmod003, which = 2)
+
 
 # square of the weight
 par(mfrow = c(2, 2))

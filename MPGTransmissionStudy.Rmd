@@ -1,10 +1,9 @@
 ---
 title: "MPGTransmissionStudy.Rmd"
 author: "Jim Callahan"
-date: "October 7, 2015"
+date: "October 7-19, 2015"
 output: pdf_document
 ---
-
 ### Executive Summary ###  
 This project is intended to answer the following two questions:  
 
@@ -12,8 +11,16 @@ This project is intended to answer the following two questions:
 2. "Quantify the MPG difference between automatic and manual transmissions?"  
 
 using statistical regression analysis in **R** on the **"Motor Trend"**, **"mtcars"** data set
-included with the **R** system.  This study does not show transmission type (automatic vs. manual ) to be significant once one accounts for weight and number of engine cylinders. This result, however, may represent a flaw in the study design; this regression study, in effect uses group averages and not paired data. Paired data would be closer to the consumer experience of evaluating one model of car with manual or automatic transmission. There may be a more distinct
-effect when one examines one model of car with manual or automatic transmission rather than pooling several models of cars together in one data set.
+included with the **R** system.  This study does not show transmission type 
+(automatic vs. manual) to be significant once one accounts for weight and 
+number of engine cylinders. 
+This result, however, may represent a flaw in the study design; this regression study, 
+in effect uses group averages and not paired data. Paired data would be closer 
+to the consumer experience of evaluating one model of car with (standard) manual 
+or (optional) automatic transmission. 
+There may be a more distinct effect when one examines one model of car at a time
+with manual or automatic transmission rather than pooling several models of cars 
+together in one data set.
 
 ### Data Vintage ###
 The source of the **"mtcars"** data set (as described in the documentation **help(mtcars)** ) is
@@ -53,33 +60,44 @@ data(mtcars)
 str(mtcars)
 ```
 
+
 ### Preliminary Analysis ###
 On the surface the minimum requirements of this project are trivially simple:  
 1. Convert the zero-one transmission indicator variable, **"am"** to an **R** **"factor"**.  
 2. Run a regression with mpg = f(am) or in **R** notation **lm(mpg ~ am))**  
+I have supressed the intercept ("0 + "), so the coefficients can be read off directly without
+having to calculate the automatic transmision as a base plus an offset.
   
 ```{r}
 # MPG Model zero "000" -- our "quick and dirty" literal regression
-MPGmod000 <- lm(mpg ~ as.factor(am), data=mtcars)
+mtcars$am <- factor(mtcars$am,levels=c(0,1), labels=c("Auto","Man"))
+MPGmod000 <- lm(mpg ~ 0 + as.factor(am), data=mtcars)
 MPGmod000
 ```
 
-According to the documention (help(mtcars)) the coding for **"am"** variable is  
-zero(0) = automatic transmission and 
-one(1)  = manual transmission.
-
 So, the "quick and dirty" interpretation our base model zero, would be that  
-the average 1980 vintage car with automatic transmission gets 17 miles per gallon
-while the average 1980 vintage car with manual transmisson gets an additional 
+the average 1975 vintage car with automatic transmission gets 17 miles per gallon
+while the average 1975 vintage car with manual transmisson gets an additional 
 7 miles per gallon for a total of 24 miles per gallon.
 
 We can picture this with a box plot.
 
 
 ```{r, echo=TRUE}
-plot(as.factor(mtcars$am), mtcars$mpg)
+
+plot(as.factor(mtcars$am), mtcars$mpg, 
+     main = "Miles per Gallon (MPG)\nfor Automatic and Manual Transmissions", 
+          ylab = "MPG")
 abline(mtcars$mpg ~ as.factor(mtcars$am))
+
 ```
+
+Clearly, as indicated by the dark horizontal line, the mean mpg of the manual transmission
+cars is higher than the mean mpg of the automatic transmission cars. But, the "whiskers" of the
+"box and whiskers" plot (the interquartile range) shows that the two ranges overlap; in other
+words, some cars with manual transmissions have mpgs as low or lower than some cars
+with automatic transmissions. If manual transmission cars always had higher mpg, there would
+be no overlap of the interquartile ranges.
 
 Of course to accept this analysis at face value, one would have to invoke the 
 economist's assumption of "***ceteris paribus***" (all other things being equal).
@@ -88,13 +106,34 @@ Of course we know all other things are **NOT EQUAL**. There are **confounding va
 For instance, the cars vary in weight, number of cylinders in their engines and the
 size of their engines measured in cubic inch displacement.
 
+One, **low tech** way of seeing what is going on is simply to **sort the data set by mpg**
+and look at the data.
+
 ```{r}
+mtcars[order(-mtcars$mpg), ]
+```
+The **top 5 high mileage cars** tend to have **smaller engines (as measured by cylinders (cyl) displacemnet (disp) and horsepower (hp) )** and **weigh less than 2,200 pounds.** The **high milage cars** also tend to be **slower** (as measured by their quarter mile times (**qsec**)), have **manual transmissions (am = 1 or "Man")** with more gears (**gear**) and fewer carburetors (**carb**).
+```{r}
+head(mtcars[order(-mtcars$mpg), ], 5)
+```
+While the **bottom 5 low mileage cars** tend to have **bigger engines (as measured by cylinders (cyl) displacemnet (disp) and horsepower (hp) )** and **weigh more than 3,500 pounds.** The **low milage cars** also tend to be **faster** (as measured by their quarter mile times (**qsec**)), have **automatic transmissions (am = 0 or "Auto")** with fewer gears (**gear**) and more carburetors (**carb**).
+```{r}
+tail(mtcars[order(-mtcars$mpg), ], 5)
+```
+
+```{r}
+attach(mtcars)
 # wt = Weight (lb/1000)
-summary( mtcars$wt )
-# cyl = Number of cylinders
-summary( as.factor(mtcars$cyl) )
+summary( wt )
+# cyl = Number of Cylinders
+# Count of cars by Number of Cylinders
+summary( as.factor(cyl) )
+# mpg by Number of Cylinders
+tapply(mpg, as.factor(cyl), mean )
+
 # disp = Displacement (cu.in.)
-summary( mtcars$disp )
+summary(disp )
+detach(mtcars)
 ```
 ### Historical Context ###
 Moreover, keep in mind the historical context, this is the late 1970s/early 1980s when there was still a huge difference between American, European and Japanese auto technology.
