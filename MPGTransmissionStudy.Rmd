@@ -1,26 +1,17 @@
 ---
 title: "MPGTransmissionStudy.Rmd"
 author: "Jim Callahan"
-date: "October 7-19, 2015"
+date: "October 7-20, 2015"
 output: pdf_document
 ---
 ### Executive Summary ###  
-This project is intended to answer the following two questions:  
+This project was intended to answer the following two questions:  
 
 1. “Is an automatic or manual transmission better for MPG?”  
 2. "Quantify the MPG difference between automatic and manual transmissions?"  
 
 using statistical regression analysis in **R** on the **"Motor Trend"**, **"mtcars"** data set
-included with the **R** system.  This study does not show transmission type 
-(automatic vs. manual) to be significant once one accounts for weight and 
-number of engine cylinders. 
-This result, however, may represent a flaw in the study design; this regression study, 
-in effect uses group averages and not paired data. Paired data would be closer 
-to the consumer experience of evaluating one model of car with (standard) manual 
-or (optional) automatic transmission. 
-There may be a more distinct effect when one examines one model of car at a time
-with manual or automatic transmission rather than pooling several models of cars 
-together in one data set.
+included with the **R** system.  
 
 ### Data Vintage ###
 The source of the **"mtcars"** data set (as described in the documentation **help(mtcars)** ) is
@@ -34,7 +25,7 @@ The **help(mtcars)** documentation states:
 > and comprises fuel consumption and 10 aspects of automobile design and performance  
 > for 32 automobiles (**1973–74 models**)."  
   
-So, it should be noted the **"mtcars"** data set is vintage **mid-1970s** and is therefore unlikely to be representative of the contemporary state of the automotive art.
+So, it should be noted the **"mtcars"** data set is vintage **mid-1970s** and is therefore unlikely to be representative of the contemporary state of the automotive art. 
 
 ### Exploratory Data Analysis ###
 According to the **help(mtcars)** documentation, **"mtcars"** is  
@@ -54,11 +45,8 @@ According to the **help(mtcars)** documentation, **"mtcars"** is
 > [,11]	**carb**	Number of carburetors"  
 >  
   
-The documentation is confirmed using the **str()** (structure) function in **R**:
-```{r}
-data(mtcars)
-str(mtcars)
-```
+The documentation was confirmed using the **str()** (structure) function in **R** 
+(ommited because the confimatory listing is redundant).
 
 
 ### Preliminary Analysis ###
@@ -66,7 +54,7 @@ On the surface the minimum requirements of this project are trivially simple:
 1. Convert the zero-one transmission indicator variable, **"am"** to an **R** **"factor"**.  
 2. Run a regression with mpg = f(am) or in **R** notation **lm(mpg ~ am))**  
 I have supressed the intercept ("0 + "), so the coefficients can be read off directly without
-having to calculate the automatic transmision as a base plus an offset.
+having to calculate the manual transmision as a base plus an offset.
   
 ```{r}
 # MPG Model zero "000" -- our "quick and dirty" literal regression
@@ -75,21 +63,19 @@ MPGmod000 <- lm(mpg ~ 0 + as.factor(am), data=mtcars)
 MPGmod000
 ```
 
-So, the "quick and dirty" interpretation our base model zero, would be that  
-the average 1975 vintage car with automatic transmission gets 17 miles per gallon
-while the average 1975 vintage car with manual transmisson gets an additional 
-7 miles per gallon for a total of 24 miles per gallon.
+So, the "quick and dirty" interpretation our base model zero, would be that the  
+average 1975 vintage car with automatic transmission gets 17+ miles per gallon
+while the average 1975 vintage car with a manual transmisson gets an additional 
+7+ miles per gallon for a total of 24+ miles per gallon.
 
-We can picture this with a box plot.
-
+We can picture this with a box plot (also known as a "box and whiskers" plot):  
+https://en.wikipedia.org/wiki/Box_plot
 
 ```{r, echo=TRUE}
-
 plot(as.factor(mtcars$am), mtcars$mpg, 
      main = "Miles per Gallon (MPG)\nfor Automatic and Manual Transmissions", 
           ylab = "MPG")
 abline(mtcars$mpg ~ as.factor(mtcars$am))
-
 ```
 
 Clearly, as indicated by the dark horizontal line, the mean mpg of the manual transmission
@@ -121,97 +107,278 @@ While the **bottom 5 low mileage cars** tend to have **bigger engines (as measur
 tail(mtcars[order(-mtcars$mpg), ], 5)
 ```
 
+So, what variables in addition to the automatic versus manual transmission 
+variable (**"am"**) should be tested as possible explainations for the difference
+in mpg between different models of cars?  
+  
+The traditional manual approach would be to look at a **correlation matrix** (which measures linear associations between variables):
 ```{r}
-attach(mtcars)
-# wt = Weight (lb/1000)
-summary( wt )
-# cyl = Number of Cylinders
-# Count of cars by Number of Cylinders
-summary( as.factor(cyl) )
-# mpg by Number of Cylinders
-tapply(mpg, as.factor(cyl), mean )
-
-# disp = Displacement (cu.in.)
-summary(disp )
-detach(mtcars)
+# Correlation matrix
+# From, "R Graphics Cookbook" by Winston Chang, Chapter 13, page 267
+data(mtcars)     # reload raw data -- so all variables are numeric and not factor
+mcor = cor(mtcars)
+round(mcor, digits = 2)
 ```
-### Historical Context ###
-Moreover, keep in mind the historical context, this is the late 1970s/early 1980s when there was still a huge difference between American, European and Japanese auto technology.
+Zero indicates no linear association. As values approach positive one (+1.00) 
+or negative one (-1.00), that indicates a stronger linear assocation. 
+As shown on the diagonal of the correlation matrix, all variables have 
+a positive one (+1.00) linear association with themselves.  If we look down the **mpg**
+column (or equivalently across the **mpg** row) we see that variables **"wt"** (weight),
+**"cyl"** (number of engine cylinders) and **"disp"** engine displacement measured
+in cubic inches have the strongest (largest absolute value) association with **"mpg"**.
+Weight (**"wt"**) has a -0.87 correlation with **"mpg"**; while cylinders (**"cyl"**)
+and displacement (**"disp"**) have a -0.85 correlation and thus would be good candidates
+to try with the **"am"** variable (automatic/manual transmission) in the regression.
 
-> "In the mid-1980s, Toyota took over the Fremont [,California] plant, one of GM's worst, 
-> a factory known for sex, drugs and defective vehicles. And as part of an historic 
-> joint venture [NUMMI], Toyota turned the plant into one of GM's best, practically overnight.  
-> Along the way — remarkably — Toyota even shared its production secrets. 
-> ...  In 1985, after NUMMI opened, Car and Driver magazine ran the following   
-> headline:  **'Hell Freezes Over.'** "    
-**"The End Of The Line For GM-Toyota Joint Venture"**  by Frank Langfitt,  
-National Public Radio (NPR), MARCH 26, 2010 3:00 PM ET  
-http://www.npr.org/templates/story/story.php?storyId=125229157  
+The negative sign on the correlation coefficients indicates an inverse relationship,
+for example one would expect as weight goes up mpg goes down (recall weight, **"wt"** 
+has a -0.87 correlation with **"mpg"**).
 
-GM's Saturn was not introduced until the 1991 model year, ten years after 
-the 1981 vintage of the "mtcars" data set.   
-https://en.wikipedia.org/wiki/Saturn_Corporation
+Winston Chang's **"R Graphics Cookbook"** has a very pretty color coded and sorted 
+correlation matrix (using the mtcars data) on page 270, Figure 13-3.
 
-Electric vehicle hybrids, such as Toyota's Prius NHW11, were not introduced to the US market 
-until the 2001 model year.  
-https://en.wikipedia.org/wiki/Toyota_Prius 
-
-
-A Web search for ggplot2 facet examples found a QuickR blog post,
-"Graphics with ggplot2" by Robert I. Kabacoff, PhD.
-http://www.statmethods.net/advgraphs/ggplot2.html
+## Regression Analysis ##
+Let's recreate the factors we removed for the correlation matrix:
 ```{r}
-# Separate regressions of mpg on weight for each number of cylinders
-# create factors with value labels 
-library(ggplot2)
+# create factors with value labels
 data(mtcars)
 mtcars$gear <- factor(mtcars$gear,levels=c(3,4,5),
-                      labels=c("3gears","4gears","5gears")) 
+labels=c("3gears","4gears","5gears"))
 mtcars$am <- factor(mtcars$am,levels=c(0,1),
-                    labels=c("Automatic","Manual")) 
+labels=c("Automatic","Manual"))
 mtcars$cyl <- factor(mtcars$cyl,levels=c(4,6,8),
-                     labels=c("4 cylinder","6 cylinder","8 cylinder")) 
+labels=c("4 cylinder","6 cylinder","8 cylinder"))
+```
 
-# All -- use everything
-MPGModAll <- lm(mpg  ~ . , data = mtcars); 
-summary(MPGModAll)
+Let's revist our original mpg regression that just used the transmission variable, **"am"**,
+but with a more detailed look at the statistics (and include a y-intercept this time).
 
-# Weignt is significant
+```{r}
+# Just Transmission variable, "am" (automatic/manual) with y-intercept
+MPGmod000 <- lm(mpg ~ as.factor(am), data=mtcars)
+summary(MPGmod000)
+```
+**This model has great p-values and t-statistics, why reject it?**
+The problem with this model is with the **"residual"** error.
+Although the **median residual** is great with less a third of an mpg error (-0.2974)
+the extremes, the **max and min residual** are almost 10 mpg! 
+The **min residual** is  -9.3923 and the max 9.5077 an almost 10 mpg error
+on the data we used to train the model (we would expect even worse errors with
+a new set of testing data). In other words this model would do awful with Toyotas
+and Cadilliacs only do well with very average cars.
+
+Since, weight (**"wt"**) had the highest correlation with **mpg** (in the correlation matrix)
+why don't we try weight in addition to the transmission variable, **am**?
+
+```{r}
+# Weight is significant
 MPGmod001 <- lm(mpg ~ as.factor(am)+wt, data=mtcars)
 summary(MPGmod001)
+```
 
-# Cylinders helps
-MPGmod002 <- lm(mpg ~ as.factor(am)+wt+as.factor(cyl), data=mtcars)
-summary(MPGmod002)
+The residual errors have improved across the board min, max and even median are all smaller,
+indicating improved prediction accuracy. **But, something strange has happened!**
+The weight variable, **"wt"** has great p-values and t-statistics, but the transmission variable
+**"am"** does not. Worse yet the transmission variable **"am"** has changed signs from positive
+to negative and has shrunk to almost zero with an "Estimate" of -0.02362.
 
-# drop Transmission (am) *** BEST MODEL ***
+A reversal of a sign when another variable is included is not uncommon in statistical
+research, "three statistical paradoxes that pervade epidemiological research: Simpson's paradox, Lord's paradox, and suppression. ...Although the three statistical paradoxes occur in different types of variables, they share the same characteristic: the association between two variables can be reversed, diminished, or enhanced when another variable is statistically controlled for."
+"**Simpson's Paradox, Lord's Paradox, and Suppression Effects are the same phenomenon – the reversal paradox**" 
+by Yu-Kang Tu,corresponding author David Gunnell and Mark S Gilthorpe1 
+http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2254615/
+
+Recall, the purpose of this project was intended to answer the following two questions:  
+
+1. “Is an automatic or manual transmission better for MPG?”  
+2. "Quantify the MPG difference between automatic and manual transmissions?" 
+
+In terms of these two questions, including the weight variable **"wt"** is a disaster!
+In response to question #1 we could say the transmission variable was 
+"statistically insignificant once weight was accounted for", but if pressed we 
+could truthfully say the coefficient was "near zero", but if really pressed we 
+would have to admit the negative sign means that the automatic transmission was 
+better by a tiny hair of a difference!  
+  
+Another approach would be to simply automate the process of variable selection with
+a **"stepwise regression"**.  **R** has the **step()** function.
+
+```{r}
+# Stepwise regression
+# based on example at bottom of R help(step) page
+# step example used swiss data, but the example is an exact analogy.
+# First we do a regression with all the variables.
+modAll <- lm(mpg ~ ., data = mtcars)
+# Then we feed the results of the all the variables regression to the step() function
+modStep <- step(modAll)
+summary(modStep)
+modStep$anova
+```
+The final formula produced by the **step()** function **"mpg ~ wt + qsec + am"** 
+solves our problem. With the addition of the **"one quarter mile time"** variable, **"qsec"**
+both the transmission variable, **"am"** and the weight variable **"wt"** can be retained.
+
+So, the sign of **"am"** coefficient has reversed again.
+By itself (with a y-intercept) **"am"** coefficient had a value of:  **7.245** .
+
+When combined with **"wt"**, the coefficient of **"am"** reversed sign and 
+went towards zero:  **-0.02362** .
+
+Now, when both **"wt"** and **"qsec"** are included the coefficient of the 
+transmission variable **"am"** (automatic/manual) changes back to positive 
+and has a plausible value of:  **2.9358** . This is an answer we can use, controlling
+for weight and how fast the car can do a quarter mile, **a standard transmision
+adds almost 3 mpg.**  
+  
+The **"qsec"** variable is the amount of time it takes to go a quarter mile
+(from rest?). The qsec variable is not a speed, it is a stopwatch time like
+track and field (how many seconds for the hundred yard dash?). Thus, a larger
+**"qsec"** value means a slower speed (it took longer). For example, a 20 second 
+quarter mile time is very slow (6 cylinder, Valiant, automatic = 20.22 seconds) 
+and a 14 second quarter mile time is very fast (Maserati = 14.6 seconds).
+So, a positive **"qsec"** coefficient means that cars with larger **"qsec"** times
+(slower cars) get higher **mpg** and cars with smaller **"qsec"** times (faster cars)
+get lower **mpg**.  
+  
+Let's take a look at the residual plots for the final model the **step()** function
+came up with: **"mpg ~ wt + qsec + am"**. First we have to re-estimate the model 
+and then we can look at two plots side by side.
+
+```{r}
 par(mfrow = c(1,2))
-MPGmod003 <- lm(mpg ~ wt+as.factor(cyl), data=mtcars)
-summary(MPGmod003)
+MPGmod003 <- lm(mpg ~ wt + qsec + am, data=mtcars)
 plot(MPGmod003, which = 1)
 plot(MPGmod003, which = 2)
+```
+The labeled outliers are **Fiat 128**, **Toyota Corolla** and **Chrysler Imperial**.
 
-MPGmod005 <- lm(mpg ~ log(wt), data=mtcars)
-summary(MPGmod005)
+Looking at the sorted list of data we printed earlier, the **Fiat 128** and 
+the **Toyota Corolla** are high mileage cars that have higher mpg than cars with 
+comparable weights. At the other extreme the **Chrysler Imperial** is a heavyweight
+car like the Cadillac Fleetwood and the Lincoln Continental (over 5,200 pounds), 
+but has almost 50% better gas mileage (14.7 vs. 10.4 mpg).  
+  
+More importantly, the theorectical quantiles versus the standardized residuals are
+close to the diagonal indicating that residuals are very near normal. Nearly normal
+residuals means that not much much information remains after subtracting our predictions
+from the actual data. At the corners of the Q-Q plot divergence from the 45 degree
+line is slightly larger perhaps suggesting that there should be more curvature
+or that the outlier points are distorting the fit.
 
-MPGmod005 <- lm(mpg ~ log(wt)+as.factor(cyl), data=mtcars)
-summary(MPGmod005)
+To get a better picture of what is going a Google search for "ggplot2 facet examples" 
+found a **QuickR** blog post, "**Graphics with ggplot2**" by Robert I. Kabacoff, PhD.
+http://www.statmethods.net/advgraphs/ggplot2.html
 
-qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
-      method="lm", formula=y~x, color=cyl, 
-      main="Regression of MPG on Weight by Engine Cylinders
-    from QuickR blog post by Robert I. Kabacoff", 
-      xlab="Weight (1,000 lbs)", 
-      ylab="Miles per Gallon - MPG")
-
-qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
-      method="lm", formula=y~log(x), color=cyl, 
-      main="Regression of MPG on Weight by Engine Cylinders
-    from QuickR blog post by Robert I. Kabacoff", 
+Because of the output of the **step()** function, I wound up not using the 
+engine cylinders variable, **"cyl"** and so I no longer needed the faceted plot,
+but I was able to use or modify the other aspects of the plot:
+```{r}
+library(ggplot2)
+mtcars$am <- factor(mtcars$am, labels=c("Automatic","Manual"))
+#  
+qplot(x = wt, y = mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~x, color=am, size=qsec,
+      main="Regression of MPG on Weight
+controlling for Quarter Mile Time amd Transmission Type
+modified from QuickR blog post by Robert I. Kabacoff", 
       xlab="Weight (1,000 lbs)", 
       ylab="Miles per Gallon - MPG")
 ```
 
+In the graph, automatic transmissions are red and manual are blue.
+The size of the point is the larger the **"qsec"** variable (note the larger
+the **"qsec"** variable the LONGER TIME/SLOWER the time took it took the car
+to cover one quarter mile)
+
+##Conclusion##
+The effect (both magnitude and direction) of manual versus automatic transmission 
+is very sensitive to what other variables are included in the regression.
+
+In response to our two questions:
+
+1. “Is an automatic or manual transmission better for MPG?”  
+According to this analysis, **a manual transmission is better for MPG**.  
+
+2. “Quantify the MPG difference between automatic and manual transmissions?”
+*The results **ranged from 0 to 7+ mpg**, the **best answer** seems to be **about 3 mpg**.
+
+Specifically, by itself (with a y-intercept) **"am"** coefficient had a value of:  **7.245** mpg.
+
+When combined with **"wt"**, the coefficient of **"am"** reversed sign and 
+went towards zero:  **-0.02362** mpg .
+
+Now, when both **"wt"** and **"qsec"** are included the coefficient of the 
+transmission variable **"am"** (automatic/manual) changes back to positive 
+and has a plausible value of:  **2.9358** mpg. So, controlling
+for weight and how fast the car can do a quarter mile, 
+**a standard transmision adds almost 3 mpg (final answer).**  
+
+## Bibliography##
+
+"**Regression Models for Data Science in R: A companion book for the Coursera 'Regression Models' class**
+by Brian Caffo (LeanPub), This version was published on 2015-08-05.
+The book is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+International License⁴, which requires author attribution for derivative works,
+non-commercial use of derivative works and that changes are shared in the same way 
+as the original work.  
+
+R Core Team (2015). "**R: A language and environment for statistical computing**". 
+    R Foundation for Statistical Computing, Vienna, Austria.
+https://www.R-project.org/.
 
 
+**"mtcars"** data set (as described in the documentation ** R help(mtcars)** ) is from  
+    Henderson and Velleman (1981), "**Building multiple regression models interactively.**" 
+    Biometrics, 37, 391–411. 
+http://www.mortality.org/INdb/2008/02/12/8/document.pdf
 
+"**ggplot2**"" R package by H. Wickham. 
+"**ggplot2: elegant graphics for data analysis**". Springer New York, 2009.
+https://cran.r-project.org/package=ggplot2
+http://ggplot2.org/book/
+
+**"R Graphics Cookbook"** by Winston Chang (O'Reilly). 
+    Copyright 2013 Winston Chang, ISBN 978-1-449-31695-2.
+http://oreil.ly/R_Graphics_Cookbook
+http://www.cookbook-r.com/Graphs/
+
+
+"**A Regression Paradox for Linear Models: Sufficient Conditions and Relation to Simpson’s Paradox**"  
+    by Aiyou CHEN, Thomas BENGTSSON, and Tin Kam HO.  
+    The American Statistician, August 2009, Vol. 63, No. 3  
+    Copyright 2009 American Statistical Association  
+http://ect.bell-labs.com/who/aychen/regressionparadox.pdf  
+
+"**Lord's Paradox Revisited { (Oh Lord! Kumbaya!)**"  
+    by Judea Pearl  
+    TECHNICAL REPORT R-436 October 2014  
+http://ftp.cs.ucla.edu/pub/stat_ser/r436.pdf    
+
+
+"**Simpson's Paradox, Lord's Paradox, and Suppression Effects are the same phenomenon – the reversal paradox**"  
+    by Yu-Kang Tu,corresponding author David Gunnell and Mark S Gilthorpe1  
+    Emerg Themes Epidemiol. 2008; 5: 2  
+    PMCID: PMC2254615  
+    Copyright 2008 Tu et al; licensee BioMed Central Ltd.  
+http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2254615/  
+
+**"Doing Data Science"**  
+by Cathy O'Neil and Rachel Schutt (O'Reilly).  
+Copyright 2014 Cathy O'Neil and Rachel Schutt, ISBN 978-1-449-35865-5  
+http://oreil.ly/doing_data_science   
+http://mathbabe.org/   
+  
+**"Data analysis with Open Source Tools"**  
+by Phillip K. Janert (O'Reilly).  
+Copyright 2011 Phillip K. Janert, ISBN 978-0-596-80235-6.  
+http://shop.oreilly.com/product/9780596802363.do  
+http://www.beyondcode.org/  
+  
+  
+**Wikipedia**  
+https://en.wikipedia.org/wiki/Berkson%27s_paradox  
+https://en.wikipedia.org/wiki/Box_plot  
+https://en.wikipedia.org/wiki/Collider_(epidemiology)  
+https://en.wikipedia.org/wiki/Confounding  
+https://en.wikipedia.org/wiki/Mediation_(statistics)  
+https://en.wikipedia.org/wiki/Simpson%27s_paradox  

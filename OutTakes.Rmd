@@ -1,0 +1,119 @@
+---
+title: "OutTakes.Rmd"
+author: "Jim Callahan"
+date: "October 20, 2015"
+output: html_document
+---
+OutTakes: stuff prepared for, but did not make it into final report.
+
+This study does not show transmission type 
+(automatic vs. manual) to be significant once one accounts for weight and 
+number of engine cylinders. In fact, mpg may be accurately modeled simply using a
+transformed version of weight to allow for non-linear effects.
+
+This result, however, may represent a flaw in the study design; this regression study, 
+relies on group averages and not paired data. Paired data would be closer 
+to the consumer experience of evaluating one model of car with (standard) manual 
+or (optional) automatic transmission. 
+In other words, there may be a more distinct effect when one examines one model of car at a time
+with manual or automatic transmission rather than pooling several models of cars 
+together in one data set. Unfortunately, the mtcars dataset does not contain identical
+models of cars with and without an optional automatic transmission. So, a paired
+test could not be conducted with this data. So, for example, this study is accounting
+for the difference in mpg between a Toyota Corona and a Cadillac Fleetwood and
+**not** the difference between a Toyota Corona with standard (manual) transmission versus
+a Totyota Corna with the automatic transmission option.
+
+```{r}
+# Separate regressions of mpg on weight for each number of cylinders
+# create factors with value labels 
+library(ggplot2)
+data(mtcars)
+mtcars$gear <- factor(mtcars$gear,levels=c(3,4,5),
+                      labels=c("3gears","4gears","5gears")) 
+mtcars$am <- factor(mtcars$am,levels=c(0,1),
+                    labels=c("Automatic","Manual")) 
+mtcars$cyl <- factor(mtcars$cyl,levels=c(4,6,8),
+                     labels=c("4 cylinder","6 cylinder","8 cylinder")) 
+
+# All -- use everything
+MPGModAll <- lm(mpg  ~ . , data = mtcars); 
+summary(MPGModAll)
+
+# Weight is significant
+MPGmod001 <- lm(mpg ~ as.factor(am)+wt, data=mtcars)
+summary(MPGmod001)
+
+# Cylinders helps
+MPGmod002 <- lm(mpg ~ as.factor(am)+wt+as.factor(cyl), data=mtcars)
+summary(MPGmod002)
+
+# drop Transmission (am) *** BEST MODEL ***
+par(mfrow = c(1,2))
+MPGmod003 <- lm(mpg ~ wt+as.factor(cyl), data=mtcars)
+summary(MPGmod003)
+plot(MPGmod003, which = 1)
+plot(MPGmod003, which = 2)
+
+MPGmod005 <- lm(mpg ~ log(wt), data=mtcars)
+summary(MPGmod005)
+
+MPGmod005 <- lm(mpg ~ log(wt)+as.factor(cyl), data=mtcars)
+summary(MPGmod005)
+
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~x, color=cyl, 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~log(x), color=cyl, 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+```
+
+```{r}
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~I(x^2)+x, color=cyl, 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+```
+
+```{r}
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~I(x^2)+x, 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+```
+
+```{r}
+qplot(wt, mpg, data=mtcars, geom=c("point", "smooth"), 
+      method="lm", formula=y~log(x), 
+      main="Regression of MPG on Weight by Engine Cylinders
+    from QuickR blog post by Robert I. Kabacoff", 
+      xlab="Weight (1,000 lbs)", 
+      ylab="Miles per Gallon - MPG")
+```
+
+```{r}
+attach(mtcars)
+# wt = Weight (lb/1000)
+summary( wt )
+# cyl = Number of Cylinders
+# Count of cars by Number of Cylinders
+summary( as.factor(cyl) )
+# mpg by Number of Cylinders
+tapply(mpg, as.factor(cyl), mean )
+
+# disp = Displacement (cu.in.)
+summary(disp )
+detach(mtcars)
+```

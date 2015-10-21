@@ -1,0 +1,39 @@
+---
+title: "TwoSampleTTest.Rmd"
+author: "Jim Callahan"
+date: "October 19, 2015"
+output: pdf_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+# Make mockup of MPG data
+data(sleep)
+str(sleep)
+mpg <- sleep$extra
+am  <- as.integer(sleep$group)
+car <- as.integer(sleep$ID)
+mock <- as.data.frame(cbind(mpg, am, car))
+str(mock)
+mock$mpg <- 15 + (mock$mpg * 4)
+mock$am  <- factor(mock$am, labels = c("automatic", "manual") )
+mock$car <- factor(mock$car)
+
+```
+
+
+
+## Paired versus independent
+```{r}
+library(ggplot2)
+g <- ggplot(mock, aes(x = am, y = mpg, group = factor(car)))
+g <- g + geom_line(size = 1, aes(colour = car)) + 
+     geom_point(size =10, pch = 21, 
+               fill = "salmon", alpha = .5)
+g + labs(x = "transmission", title = "Mockup of MPG Difference \nUsing Paired Car Models")
+```
+
+
