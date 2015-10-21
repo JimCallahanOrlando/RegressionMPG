@@ -182,12 +182,45 @@ The weight variable, **"wt"** has great p-values and t-statistics, but the trans
 **"am"** does not. Worse yet the transmission variable **"am"** has changed signs from positive
 to negative and has shrunk to almost zero with an "Estimate" of -0.02362.
 
-A reversal of a sign when another variable is included is not uncommon in statistical
-research, "three statistical paradoxes that pervade epidemiological research: Simpson's paradox, Lord's paradox, and suppression. ...Although the three statistical paradoxes occur in different types of variables, they share the same characteristic: the association between two variables can be reversed, diminished, or enhanced when another variable is statistically controlled for."
-"**Simpson's Paradox, Lord's Paradox, and Suppression Effects are the same phenomenon – the reversal paradox**" 
-by Yu-Kang Tu,corresponding author David Gunnell and Mark S Gilthorpe1 
-http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2254615/
+A reversal of a sign when another variable is included is not uncommon in statistical  
+research:  
 
+> "**three statistical paradoxes** that pervade epidemiological research:  
+> **Simpson's paradox, Lord's paradox, and suppression**. ...Although the three statistical  
+> paradoxes occur in different types of variables, they share the same characteristic:  
+> **the association between two variables can be reversed, diminished, or enhanced** when  
+> **another variable is statistically controlled for**."  
+"**Simpson's Paradox, Lord's Paradox, and Suppression Effects are the same phenomenon – the reversal paradox**"  
+by Yu-Kang Tu,corresponding author David Gunnell and Mark S Gilthorpe1  
+http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2254615/  
+
+> "As we show later, **the paradox** can arise naturally in some scenarios and is   
+> not necessarily the result of sampling error, collinearity, or misspecified models,  
+> as has been suggested previously. Simulations further show that the phenomenon  
+> is possible in more general, non-Gaussian settings.  We also provide an interesting  
+> geometric connection between the regression and **Simpson’s paradox**."  
+"**A Regression Paradox for Linear Models: Sufficient Conditions and Relation to Simpson’s Paradox**"  
+by Aiyou CHEN, Thomas BENGTSSON, and Tin Kam HO.  
+The American Statistician, August 2009, Vol. 63, No. 3  
+http://ect.bell-labs.com/who/aychen/regressionparadox.pdf 
+
+> "The Birth Weight paradox was instrumental in bringing this controversy to a  
+> resolution. First, it has persuaded most epidemiologists that **collider bias** is  
+> a real phenomenon that needs to be reckoned with (Cole et al., 2010). Second,  
+> it drove researchers to abandon traditional mediation analysis (usually connected  
+> with Baron and Kenny (1986)) in which mediation is define[d] by  
+> statistical conditioning (or 'statistical control,' in which the mediator is  
+> partial led out), and replace it with causally defined mediation analysis  
+> based on counterfactual conditioning (VanderWeele, 2009; Imai et al., 2010;  
+> Pearl, 2012; Valeri and VanderWeele, 2013; Muthfien, 2014).   
+> I believe Frederic Lord would be mighty satisfied today with the development  
+> that his 1967 observation has spawned."   
+"**Lord's Paradox Revisited  (Oh Lord! Kumbaya!)**"  
+by Judea Pearl, TECHNICAL REPORT R-436 October 2014  
+http://ftp.cs.ucla.edu/pub/stat_ser/r436.pdf  
+  
+  
+  
 Recall, the purpose of this project was intended to answer the following two questions:  
 
 1. “Is an automatic or manual transmission better for MPG?”  
@@ -299,8 +332,8 @@ In response to our two questions:
 1. “Is an automatic or manual transmission better for MPG?”  
 According to this analysis, **a manual transmission is better for MPG**.  
 
-2. “Quantify the MPG difference between automatic and manual transmissions?”
-*The results **ranged from 0 to 7+ mpg**, the **best answer** seems to be **about 3 mpg**.
+2. “Quantify the MPG difference between automatic and manual transmissions?”  
+The results **ranged from 0 to 7+ mpg**, the **best answer** seems to be **about 3 mpg**.
 
 Specifically, by itself (with a y-intercept) **"am"** coefficient had a value of:  **7.245** mpg.
 
@@ -342,6 +375,10 @@ http://ggplot2.org/book/
 http://oreil.ly/R_Graphics_Cookbook
 http://www.cookbook-r.com/Graphs/
 
+**QuickR** blog
+“**Graphics with ggplot2**” by Robert I. Kabacoff, PhD.  
+http://www.statmethods.net/advgraphs/ggplot2.html  
+
 
 "**A Regression Paradox for Linear Models: Sufficient Conditions and Relation to Simpson’s Paradox**"  
     by Aiyou CHEN, Thomas BENGTSSON, and Tin Kam HO.  
@@ -362,6 +399,16 @@ http://ftp.cs.ucla.edu/pub/stat_ser/r436.pdf
     Copyright 2008 Tu et al; licensee BioMed Central Ltd.  
 http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2254615/  
 
+"**Oh no! I got the wrong sign! What should I do?**"  
+by Peter Kennedy  
+Economics Discussion Paper, Simon Fraser University, ISSN 1183-1057  
+http://www.stat.columbia.edu/~gelman/stuff_for_blog/oh_no_I_got_the_wrong_sign.pdf  
+  
+  
+"**How to understand coefficients that reverse sign when you start controlling for things?**"  
+Posted by Andrew [Gelman] on 26 May 2013, 9:44 am  
+http://andrewgelman.com/2013/05/26/how-to-understand-coefficients-that-reverse-sign-when-you-start-controlling-for-things/  
+
 **"Doing Data Science"**  
 by Cathy O'Neil and Rachel Schutt (O'Reilly).  
 Copyright 2014 Cathy O'Neil and Rachel Schutt, ISBN 978-1-449-35865-5  
@@ -381,4 +428,5 @@ https://en.wikipedia.org/wiki/Box_plot
 https://en.wikipedia.org/wiki/Collider_(epidemiology)  
 https://en.wikipedia.org/wiki/Confounding  
 https://en.wikipedia.org/wiki/Mediation_(statistics)  
+https://en.wikipedia.org/wiki/Multicollinearity  
 https://en.wikipedia.org/wiki/Simpson%27s_paradox  
